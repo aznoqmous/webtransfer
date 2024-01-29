@@ -1,6 +1,6 @@
 <template>
     <div class="file-input">
-        <input ref="fileInput" type="file" accept=".jpg,.jpeg,.png,.gif,.webp" @input="handleFileInput" multiple>
+        <input ref="fileInput" type="file" @input="handleFileInput" multiple>
     </div>
 </template>
 <script setup>

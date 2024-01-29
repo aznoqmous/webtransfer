@@ -14,7 +14,7 @@
         <div v-if="uploadedFiles.length" class="link">
             {{ req.origin + "/" + uuid }}
         </div>
-
+        {{ progress}}
     </div>
 </template>
 <script setup>
@@ -26,6 +26,7 @@ const uuid = ref(await useUuid())
 const uploadedFiles = ref([])
 let files = []
 const uploadedFileSize = ref(0)
+const progress = ref("")
 
 
 const filesChange = (inputFiles, newFiles) => {
@@ -56,6 +57,7 @@ const getFileContent = async (file) => {
 const uploadFile = async (file) => {
   let path = null
   const content = await getFileContent(file)
+  
   for (let i = 0; i < file.size; i += chunkSize) {
     path = await $fetch(`/api/${uuid.value}/upload`, {
       method: "POST",
@@ -65,6 +67,8 @@ const uploadFile = async (file) => {
         content: btoa(content.slice(i, i + chunkSize))
       }
     })
+    progress.value = `${(Math.min((i+chunkSize)/file.size*100, 100)).toFixed(2)}%`
+
   }
   return path.replace('./public', "")
 }

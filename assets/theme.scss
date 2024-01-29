@@ -43,6 +43,8 @@ body {
     font-family: var(--font-family);
     min-height: 100vh;
     background: linear-gradient(to top right, var(--color-bg-0), var(--color-bg-1));
+    display: flex;
+    justify-content: center;
 }
 
 h1,h2,h3,h4,h5 {
