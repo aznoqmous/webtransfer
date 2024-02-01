@@ -1,7 +1,9 @@
 <template>
   <div>
     <h1>web<span>transfer</span></h1>
-    <NuxtPage/>
+    <div class="container">
+      <NuxtPage/>
+    </div>
   </div>
 </template>
 <style lang="scss">

@@ -1,6 +1,10 @@
 <template>
     <div class="file-input">
-        <input ref="fileInput" type="file" @input="handleFileInput" multiple>
+        <label for="file">
+            <i>+</i>
+            <span>Ajouter des fichiers</span> 
+        </label>
+        <input id="file" ref="fileInput" type="file" @input="handleFileInput" multiple>
     </div>
 </template>
 <script setup>

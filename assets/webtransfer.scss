@@ -1,6 +1,11 @@
 body {
     background: linear-gradient(to top right, var(--color-bg-0), var(--color-bg-1));
     min-height: 100vh;
+    background: var(--color-bg-1);
+    .container {
+        background: var(--color-bg-1);
+        border-radius: 0.8rem;
+    }
 }
 
 h1 {
@@ -19,4 +24,126 @@ form {
 
 table {
     color: var(--color-bg-5);
+}
+
+.file-input {
+    width: 100%;
+    label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        i {
+            background: var(--accent-color);
+            color: var(--color-bg-0);
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            font-style: normal;
+        }
+    }
+    input {
+        width: 100%;
+        display: none;
+    }
+    
+}
+
+.uploaded-files {
+    background: var(--color-bg-0);
+    border-radius: 0.6rem;
+
+    background: var(--color-bg-0);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    padding: 0.6rem;
+
+    figure.file {
+        display: flex;
+        flex-direction: column;
+        padding: .2rem 0;
+        position: relative;
+        &:not(:last-child){
+            border-bottom: 1px solid var(--color-light-grey);
+        }
+        strong {
+            font-weight: 400;
+        }
+
+        span, small {
+            color: var(--color-grey);
+        }
+        progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            width: 100%;
+        }
+    }
+}
+
+.progress {
+    position: relative;
+    isolation: isolate;
+    width: 100%;
+    display: block;
+
+    .size {
+        font-size: 0.8rem;
+        color: var(--color-grey);
+        padding: 0.2rem;
+        text-align: right;
+    }
+    
+    progress {
+        position: absolute;
+        z-index: -1;
+    }
+    
+}
+
+.circle-progress {
+    --size: 6rem;
+    width: var(--size);
+    height: var(--size);
+    background: conic-gradient(from 0deg at 50% 50%, var(--accent-color) 0%, var(--accent-color) calc(var(--progress) * 100%), var(--color-bg-2) calc(var(--progress) * 100%), var(--color-bg-2));
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: inset 0 0 0.5rem rgba(0,0,0,0.1);
+    margin-left: auto;
+    span {
+        font-size: calc(var(--size) / 5);
+        background: var(--color-bg-1);
+        color: var(--color-grey);
+        width: calc(var(--size) / 3 * 2);
+        height: calc(var(--size) / 3 * 2);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: 900;
+        box-shadow: 0 0 0.5rem rgba(0,0,0,0.1);
+    }
+}
+
+.link {
+    margin: 0 auto;
+}
+
+progress {
+    border: unset;
+    transition: all 0.1s ease;
+    &::-webkit-progress-bar {
+        background: var(--color-light-grey);
+    }
+    &::-webkit-progress-value {
+        background: var(--accent-color);
+    }
+
 }

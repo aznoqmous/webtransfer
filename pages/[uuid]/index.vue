@@ -1,10 +1,13 @@
 <template>
     <div>
         <div v-if="files.length">
-            <div v-for="file in files">
+            <ul>
+              <li v-for="file in files">
                 {{ file.name }}
-                {{ humanFileSize(file.size) }}
-            </div>
+                {{ humanFileSize(file.size) }} - {{ file.type }}
+              </li>
+            </ul>
+              {{ humanFileSize(totalFileSize) }}
             <div class="button" @click="downloadArchive">
                 Download
             </div>
@@ -15,9 +18,12 @@
 const route = useRoute()
 const uuid = route.params.uuid
 const files = ref([])
+const totalFileSize = ref(0)
 
 const fetchInfos = async()=>{
-    files.value = await $fetch(`/api/${uuid}/infos`)
+    const fs = await $fetch(`/api/${uuid}/infos`)
+    files.value = fs
+    fs.map(f => totalFileSize.value += f.size)
 }
 fetchInfos()
 
