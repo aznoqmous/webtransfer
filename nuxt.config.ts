@@ -18,5 +18,9 @@ export default defineNuxtConfig({
     dirs: [
         'composables/**'
     ]
-  }
+  },
+  alias: {
+    "prisma": "src/prisma.js",
+    "MD5": "src/MD5.js"
+  },
 })

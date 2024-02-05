@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+    id Int @id @default(autoincrement())
+    username String @unique
+    email String @unique
+    password String
+    token String?
+    tokenValidity DateTime?
+    archives Archive[]
+}
+
+model Archive {
+    id Int @id @default(autoincrement())
+    uuid String @unique
+    createdAt DateTime @default(now())
+    userId Int
+    title String?
+    filesCount Int?
+    fileSize Int?
+    downloadCount Int @default(0)
+    user User @relation(fields: [userId], references: [id])
+}
