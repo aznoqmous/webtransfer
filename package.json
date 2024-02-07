@@ -7,7 +7,8 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "migrate:dev": "npx prisma migrate dev --name init ; npx prisma generate"
   },
   "devDependencies": {
     "nuxt": "^3.9.3",
@@ -16,6 +17,7 @@
   },
   "dependencies": {
     "@prisma/client": "^4.6",
-    "sass": "^1.70.0"
+    "sass": "^1.70.0",
+    "yarn": "^1.22.21"
   }
 }

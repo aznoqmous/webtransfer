@@ -14,10 +14,16 @@ export default defineEventHandler(async(event)=>{
                     fs.unlinkSync(curPath);
                 }
             });
-            fs.rmdirSync(path);
+            fs.rm(path, {recursive: true, force: true});
           }
       };
-    deleteFolderRecursive(path)
+    //deleteFolderRecursive(path)
+    if(fs.existsSync(path)){
+        fs.rmdirSync(path, {
+            recursive: true,
+            force: true
+        });
+    }
 
     await prisma.Archive.delete({
         where: {

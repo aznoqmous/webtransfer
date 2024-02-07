@@ -97,6 +97,21 @@ form {
     display: flex;
     justify-content: space-between;
 }
+.row-start {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+}
+.column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+.column-start {
+    display: flex;
+    flex-direction: column;
+}
 .form-field {
     position: relative;
     margin: 0.2rem 0;
@@ -121,17 +136,23 @@ form {
 }
 
 input, select, textarea {
-    background: var(--color-bg-0);
-    border: 2px solid var(--color-bg-0);
-    padding: var(--input-padding);
-    border-radius: var(--border-radius);
-    color: currentColor;
     font: inherit;
+    border: 2px solid transparent;
+    background: transparent;
     outline: unset;
+    border-radius: calc(var(--border-radius) / 2);
+    &:not(.form-transparent){
+        border-radius: var(--border-radius);
+        background: var(--color-bg-0);
+        border: 2px solid var(--color-bg-0);
+        padding: var(--input-padding);
+        color: currentColor;
+    }
     &:focus {
         background: var(--color-bg-1);
         border: 2px solid var(--accent-color);
     }
+
 }
 
 table {

@@ -3,7 +3,7 @@
       <div class="head row">
         <form v-if="uploadedFiles.length" ref="form" @submit.prevent="update">
           <div class="form-field">
-            <input type="text" id="title" name="title" @focusout="update">
+            <input type="text" id="title" name="title" :value="archiveTitle" @focusout="update">
             <label for="title">title</label>
           </div>
         </form>
@@ -11,9 +11,19 @@
       </div>
       <div class="uploaded-files" v-if="uploadedFiles.length">
           <figure class="file" v-for="file in uploadedFiles">
-              <strong v-if="file.progress >= 1">{{ file.name }}</strong>
-              <span v-else>{{ file.name }}</span>
-              <small>{{ Utils.humanFileSize(file.size) }} - {{ file.type }}</small>  
+              <div class="row-start">
+                <div class="left">
+                  <figure class="material-symbols-outlined">
+                    {{ Utils.getFileIcon(file.type) }}
+                  </figure>
+                  <small class="extension">{{ file.name.split('.').at(-1) }}</small>
+                </div>
+                <div class="right column-start">
+                  <strong v-if="file.progress >= 1">{{ file.name }}</strong>
+                  <span v-else>{{ file.name }}</span>
+                  <small>{{ Utils.humanFileSize(file.size) }} - {{ file.type }}</small>  
+                </div>
+              </div>
               <progress v-if="file.progress < 1" max="100" :value="file.progress * 100">{{ file.progress * 100 }}%</progress>
           </figure>
           <div v-if="uploadedFiles.length">
@@ -55,6 +65,7 @@ const totalFileSize = ref(0)
 const speed = ref(0)
 const user = await useUser()
 const form = ref(null)
+const archiveTitle = uuid.value
 
 const copy = ()=>{
   navigator.clipboard.writeText(req.origin + "/" + uuid.value)
@@ -66,9 +77,7 @@ const filesChange = (inputFiles, newFiles) => {
 }
 
 const update = async()=>{
-
   const data = Object.fromEntries(new FormData(form.value))
-  if(data.title.length < 5) return;
   await $fetch(`/api/${uuid.value}/update`, {
     method: "POST",
     body: {
@@ -122,10 +131,9 @@ const uploadFile = async (file) => {
   let lastByte = Date.now()
   for (let i = 0; i < file.size; i += chunkSize) {
     const data = content.slice(i, i + chunkSize)
-    path = await $fetch(`/api/${uuid.value}/upload`, {
+    path = await $fetch(`/api/${uuid.value}/file/upload`, {
       method: "POST",
       body: {
-        uuid: uuid.value,
         name: file.name,
         content: btoa(data)
       }
@@ -136,6 +144,15 @@ const uploadFile = async (file) => {
     uploadedFileSize.value += data.length
     totalProgress.value = uploadedFileSize.value / totalFileSize.value
   }
+
+  $fetch(`/api/${uuid.value}/file/uploaded`, {
+      method: "POST",
+      body: {
+        name: file.name,
+        type: file.type 
+      }
+    })
+
   return path ? path.replace('./public', "") : null
 }
 

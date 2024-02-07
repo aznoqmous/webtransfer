@@ -21,10 +21,22 @@ model Archive {
     id Int @id @default(autoincrement())
     uuid String @unique
     createdAt DateTime @default(now())
+    startedAt DateTime @default(now())
     userId Int
     title String?
     filesCount Int?
     fileSize Int?
     downloadCount Int @default(0)
     user User @relation(fields: [userId], references: [id])
+    files File[]
+}
+
+model File {
+    id Int @id @default(autoincrement())
+    name String
+    path String @unique
+    archiveId Int
+    size Int
+    type String
+    archive Archive @relation(fields: [archiveId], references: [id], onDelete: Cascade)
 }

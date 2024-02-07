@@ -14,4 +14,8 @@
 </template>
 <script setup>
 const user = await useUser()
+if(!user.value){
+    const {me} = await useAuth()
+    user.value = await me()
+}
 </script>

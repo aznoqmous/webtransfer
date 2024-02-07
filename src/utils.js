@@ -22,4 +22,21 @@ export default class Utils {
           unitDisplay: "narrow",
         }).format(size)
       }
+
+  static getFileIcon(fileType){
+    const icons = {
+        audio: "audio_file",
+        video: "video_file",
+        image: "image",
+        application: "draft",
+        text: "description",
+        font: "match_case",
+        compressed: "folder_zip",
+    }
+    let icon = "draft"
+    Object.keys(icons).map(k => {
+        if(fileType.match(k)) icon = icons[k]
+    })
+    return icon
+  }
 }

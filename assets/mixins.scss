@@ -1,0 +1,99 @@
+@mixin font-face($family, $src, $fileArgs: '', $style: normal, $weight: normal) {
+    @font-face {
+      font-family: $family;
+      src: url('#{$src}.eot#{$fileArgs}'); // IE9 compatibility
+      src: url('#{$src}.eot#{$fileArgs}#iefix') format('embedded-opentype'), // IE8 and below
+      url('#{$src}.ttf#{$fileArgs}') format('truetype'), // Safari, Android, iOS
+      url('#{$src}.woff2#{$fileArgs}') format('woff2'), // new standards
+      url('#{$src}.woff#{$fileArgs}') format('woff'), // standards
+      url('#{$src}.svg#{$fileArgs}##{$family}') format('svg'); // legacy iOS
+      font-style: $style;
+      font-weight: $weight;
+    }
+  }
+  
+  @mixin row($horizontal: flex-start, $vertical: flex-start) {
+    display: flex;
+    flex-direction: row;
+    justify-content: $horizontal;
+    align-items: $vertical;
+  }
+  
+  @mixin column($horizontal: flex-start, $vertical: flex-start) {
+    display: flex;
+    flex-direction: column;
+    justify-content: $vertical;
+    align-items: $horizontal;
+  }
+  
+  @mixin center {
+    @include row(center, center);
+  }
+  
+  @mixin size($width: 100%, $height: 100%) {
+    width: $width;
+    height: $height;
+  }
+  
+  @mixin square($size) {
+    @include size($size, $size);
+  }
+  
+  @mixin fill {
+    @include square(100%);
+  }
+  
+  @mixin headings {
+    h1, h2, h3, h4, h5, h6 {
+      @content;
+    }
+  }
+  
+  @mixin transition($type: all, $duration:0.4s) {
+    transition: $type $duration ease-out;
+  }
+  
+  @mixin list($spacing: 1rem, $columns:false) {
+    @include row;
+    flex-wrap: wrap;
+    gap: $spacing;
+    @if ($columns) {
+      > * {
+        width: calc(100% / $columns - $spacing * ($columns - 1) / $columns);
+      }
+    }
+  }
+  
+  @mixin grid($grid: 2, $spacing: 0) {
+    display: grid;
+    grid-template-columns: repeat($grid, 1fr);
+    gap: $spacing;
+  }
+  
+  @mixin absoluteFit {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+  }
+  
+  @mixin imgFit($fit: contain, $position: center) {
+    width: 100%;
+    height: 100%;
+    object-fit: $fit;
+    object-position: $position;
+  }
+  
+  @mixin text-overflow($lines: 3) {
+    display: -webkit-box;
+    -webkit-line-clamp: $lines;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  @function pxrem($px) {
+    @return calc($px / 16 * 1rem);
+  }
+  

@@ -51,7 +51,19 @@ table {
     }
     
 }
-
+.extension {
+    position: absolute;
+    right: 0;
+    color: var(--accent-color) !important;
+    font-size: 0.6rem;
+    border-radius: 0.5em;
+    padding: 0.1em 0.2em;
+    font-weight: 600;
+    border: 2px solid var(--accent-color);
+    &:before {
+        content: ".";
+    }
+}
 .uploaded-files {
     background: var(--color-bg-0);
     border-radius: 0.6rem;
@@ -66,16 +78,25 @@ table {
         flex-direction: column;
         padding: .2rem 0;
         position: relative;
+        .row-start {
+            gap: 0.5rem;
+            
+        }
         &:not(:last-child){
             border-bottom: 1px solid var(--color-light-grey);
         }
+        figure {
+            font-size: 2rem;
+            color: var(--accent-color);
+        }
         strong {
-            font-weight: 400;
+            @include text-overflow(1);
         }
 
         span, small {
             color: var(--color-grey);
         }
+
         progress {
             position: absolute;
             bottom: 0;
@@ -160,6 +181,7 @@ progress {
 .archives-list {
     display: grid;
     grid-template-rows: 1fr;
+    gap: 1rem;
     .archive-item {
         &:not(:last-child){
             border-bottom: 1px solid var(--color-light-grey);
@@ -173,6 +195,9 @@ progress {
     color: var(--color-light-grey);
     padding: 1rem;
     align-items: center;
+    background: var(--color-bg-0);
+    border-radius: 0.6rem;
+    gap: 1rem;
     figure {
         font-size: 5rem;
     }
@@ -194,6 +219,122 @@ progress {
             position: absolute;
             right: 0;
             top: 0;
+        }
+    }
+}
+
+.archive-details {
+    display: flex;
+    padding: 1rem;
+    border-radius: 0.6rem;
+    background: var(--color-bg-0);
+    gap: 1rem;
+    .title {
+        align-items: center;
+        gap: 1rem;
+        h3 {
+            flex: 1 0;
+        }
+    }
+    figure {
+        font-size: 6rem;
+        color: var(--accent-color);
+    }
+    .content {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+
+        h3 {
+            margin: 0;
+            .form-transparent {
+                width: 100%;
+            }
+        }
+
+        > span {
+            color: var(--color-grey);
+        }
+        .delete {
+            cursor: pointer;
+        }
+        .actions {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+        }
+        .files {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            align-items: stretch;
+            .file {
+                position: relative;
+                border-radius: 0.5rem;
+                overflow: hidden;
+                
+
+                
+
+                .file-item {
+                    width: 8rem;
+                    aspect-ratio: 1;
+                    overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
+                    border-radius: 0.5rem;
+                    padding: 0.5rem;
+                    font-size: 0.8rem;
+                    position: relative;
+                    transition: all 0.2s ease;
+                    background: var(--color-bg-1);
+
+                    &.loading {
+                        opacity: 0.5;
+                        background: var(--color-bg-0);
+                        figure {
+                            color: var(--color-grey);
+                        }
+                    }
+
+                    progress {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        height: 100%;
+                        width: 100%;
+                        opacity: 0.3;
+                    }
+
+                    .extension {
+                        right: 0.5rem;
+                        bottom: 0.5rem;
+                        top: unset;
+                    }
+                    figure {
+                        font-size: 3rem;
+                        height: 3rem;
+                        width: 4rem;
+                        transition: all 0.2s ease;
+                        img {
+                            object-fit: cover;
+                            height: 100%;
+                            width: 100%;
+                            border: 3px solid var(--color-white);
+                            border-radius: 0.3rem;
+                            background: linear-gradient(to top right, rgba(0,0,0,0.1), transparent);
+                        }
+                    }
+                    small.size {
+                        margin-top: auto;
+                    }
+                    > * {
+                        flex-shrink: 0;
+                        @include text-overflow(1);
+                    }
+                }
+            }
         }
     }
 }
