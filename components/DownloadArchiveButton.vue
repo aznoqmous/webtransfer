@@ -1,12 +1,22 @@
 <template>
     <div class="button" @click="downloadArchive">
-    <span class="material-symbols-outlined">
-        download
-    </span>
-    <strong>Télécharger</strong>
-</div>
+      <div class="column">
+        <div class="row">
+      <span class="material-symbols-outlined">
+          download
+      </span>
+      <strong>Télécharger</strong>
+
+      </div>
+      <small class="files-count">
+          {{ archive.filesCount > 1 ? archive.filesCount + " fichiers" : "1 fichier"}}
+          - {{ Utils.humanFileSize(archive.fileSize) }}
+      </small>
+      </div>
+    </div>
 </template>
 <script setup>
+import Utils from "~/src/utils"
 const props = defineProps(["archive"])
 const archive = props.archive
 

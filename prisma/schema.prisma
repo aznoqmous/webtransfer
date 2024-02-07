@@ -24,9 +24,9 @@ model Archive {
     startedAt DateTime @default(now())
     userId Int
     title String?
-    filesCount Int?
-    fileSize Int?
-    downloadCount Int @default(0)
+    filesCount Int? @default(0)
+    fileSize Int? @default(0)
+    downloadCount Int? @default(0)
     user User @relation(fields: [userId], references: [id])
     files File[]
 }

@@ -6,12 +6,12 @@
             </figure>
         </a>
         <div class="content">
-            <h3>{{ archive.title || "No title" }}</h3>
-            <strong>
-                {{ Utils.humanFileSize(archive.fileSize) }}
-                -
-                {{ archive.filesCount > 1 ? archive.filesCount + " fichiers" : "1 fichier"}}
-            </strong>
+            <h3>{{ archive.title || "Sans titre" }}</h3>
+            <small class="files-count">
+              {{ archive.filesCount > 1 ? archive.filesCount + " fichiers" : "1 fichier"}}
+              -
+              {{ Utils.humanFileSize(archive.fileSize) }}
+          </small>
             <span>{{ Utils.humanDuration(timeLeft) }}</span>
             <small>Téléchargé {{ archive.downloadCount }} fois</small>
             <div v-if="user && user.id == archive.userId" class="actions">
@@ -33,7 +33,7 @@ const ellapsedTime = Date.now() - createdDate.getTime()
 const timeLeft = config.archiveLifeTimeSeconds - ellapsedTime / 1000
 
 const remove = async ()=>{
-    emit("delete", archive.uuid)
+    emit("delete", archive)
     await $fetch(`/api/${archive.uuid}/delete`, {method: "POST"})
 }
 

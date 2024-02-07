@@ -1,36 +1,53 @@
 <template>
     <div class="archive-details">
-      <div class="column">
+      <div v-if="archive.files.length" class="column">
         <div class="content">
           <div class="row header">
             <div class="title row">
-              <h3 v-if="user && user.id == archive.userId"><input ref="titleInput" class="archive-title form-transparent" type="text" :value="archive.title" @focusout="update"></h3>
-              <h3 v-else>{{ archive.title || "No title" }}</h3>
+              <h3 v-if="user && user.id == archive.userId"><input ref="titleInput" class="archive-title form-transparent" placeholder="Sans titre" type="text" :value="archive.title" @focusout="update"></h3>
+              <h3 v-else>{{ archive.title || "Sans titre" }}</h3>
               <FileInput v-if="user && user.id == archive.userId" @filesChange="filesChange"></FileInput>
             </div>
-            </div>
-            <small>
-                {{ archive.files.length > 1 ? archive.files.length + " fichiers" : "1 fichier"}}
-                -
-                {{ Utils.humanFileSize(archive.fileSize) }}
-            </small>
+          </div>
+          <small class="files-count">
+              {{ archive.files.length > 1 ? archive.files.length + " fichiers" : "1 fichier"}}
+              -
+              {{ Utils.humanFileSize(totalFileSize) }}
+          </small>
+          
+          <div class="files">
+              <div class="file" v-for="file in files">
+                  <FileItem :file="file" :progress="file.progress"/>
+              </div>
+          </div>
+        </div>
+        <div class="column" v-if="uploadedFileSize > 0 && uploadedFileSize/totalUploadFileSize < 1">
+          <div class="circle-progress" :style="'--progress:'+uploadedFileSize/totalUploadFileSize">
+            <span>
+              <strong>{{ Math.floor(uploadedFileSize/totalUploadFileSize*100) }}%</strong>
+              <small>{{ Utils.humanFileSize(speed) }}/s</small>
+            </span>
             
-            <div class="files">
-                <div class="file" v-for="file in files">
-                    <FileItem :file="file" :progress="file.progress"/>
-                </div>
-            </div>
-            <small v-if="user && user.id == archive.userId">Téléchargé {{ archive.downloadCount }} fois</small>
-            <div v-if="user && user.id == archive.userId" class="actions">
-              <span class="delete material-symbols-outlined" @click="remove(archive.uuid)">delete</span>
-            </div>
           </div>
-          <div class="column">
-            <small>Expire dans {{ Utils.humanDuration(timeLeft) }}</small>
-            <DownloadArchiveButton :archive="archive"/>
+          <div class="time-left">
+            {{ Utils.humanDuration((totalUploadFileSize-uploadedFileSize)/avgSpeed) }}
           </div>
+        </div>
+        <div v-else-if="timeLeft" class="column">
+          <DownloadArchiveButton :archive="archive"/>
+          <small class="time-left">Expire dans {{ Utils.humanDuration(timeLeft) }}</small>
+          <small class="download-count" v-if="timeLeft && user && user.id == archive.userId">Téléchargé {{ archive.downloadCount }} fois</small>
+        </div>
+        <div v-else>
+          <ShareArchiveButton :archive="archive">Partager</ShareArchiveButton>
+        </div> 
+      
+      </div>
+      <div v-else>
+        <FileInput v-if="user && user.id == archive.userId" @filesChange="filesChange"></FileInput>
       </div>
     </div>
+    
 </template>
 <script setup>
 import config from "~/src/config.json"
@@ -44,13 +61,16 @@ const ellapsedTime = Date.now() - createdDate.getTime()
 const timeLeft = config.archiveLifeTimeSeconds - ellapsedTime / 1000
 const titleInput = ref(null)
 
-const chunkSize = 1000000
+const chunkSize = 1024 * 1024
 const uploadedFiles = ref([])
 const files = ref(archive.files)
 const uploadedFileSize = ref(0)
-const totalProgress = ref(0)
-const totalFileSize = ref(0)
+const totalUploadFileSize = ref(0)
+const totalFileSize = ref(archive.fileSize)
 const speed = ref(0)
+const avgSpeed = ref(0)
+
+import fs from "fs"
 
 const remove = async (uuid)=>{
     user.value.archives = user.value.archives.filter(a => a.uuid !== uuid)
@@ -61,22 +81,30 @@ if(timeLeft < 0) {
     remove(archive.uuid)
 }
 
-
 const update = async(e)=>{
-    const body = {}
-    if(titleInput.value) body.title = titleInput.value.value,
     await $fetch(`/api/${archive.uuid}/update`, {
         method: "POST",
-        body
+        body: {
+          title: titleInput.value ? titleInput.value.value : archive.uuid,
+          userId: user.value.id,
+          fileSize: totalFileSize.value,
+          filesCount: files.value.length
+        }
     })
 }
-
 
 const filesChange = (inputFiles, newFiles) => {
   upload(newFiles)
 }
 
+let startedAt = 0
 const upload = async (newFiles) => {
+  startedAt = Date.now()
+  avgSpeed.value = 0
+  uploadedFileSize.value = 0
+  totalUploadFileSize.value = 0
+
+  await update()
 
   if(newFiles.length == files.length) {
     uploadedFiles.value = []
@@ -87,28 +115,18 @@ const upload = async (newFiles) => {
     file.progress = ref(0)
     files.value.push(file)
     uploadedFiles.value.push(file)
-    totalFileSize.value += file.size
+    totalUploadFileSize.value += file.size
   }
   for (let file of newFiles) {
     const f = await uploadFile(file)
     uploadedFiles.value.splice(uploadedFiles.value.indexOf(file), 1)
+    totalFileSize.value += file.size
   }
+
   await update()
 }
 
-const getFileContent = async (file) => {
-  return new Promise(resolve => {
-    const fr = new FileReader()
-    fr.onloadend = (e) => {
-      if (e.target.readyState == FileReader.DONE) resolve(e.srcElement.result)
-    }
-    fr.readAsBinaryString(file)
-  })
-}
-
-const uploadFile = async (file) => {
-  const content = await getFileContent(file)
-  let lastByte = Date.now()
+const uploadFile = async (file)=>{
 
   await $fetch(`/api/${archive.uuid}/file/before-upload`, {
       method: "POST",
@@ -117,30 +135,53 @@ const uploadFile = async (file) => {
       }
     })
 
-  for (let i = 0; i < file.size; i += chunkSize) {
-    const data = content.slice(i, i + chunkSize)
-    await $fetch(`/api/${archive.uuid}/file/upload`, {
-      method: "POST",
-      body: {
-        name: file.name,
-        content: btoa(data)
-      }
-    })
-    speed.value = data.length / ((Date.now() - lastByte) / 1000)
-    lastByte = Date.now()
-    file.progress.value = Math.min((i+chunkSize)/file.size,1)
-    uploadedFileSize.value += data.length
-    totalProgress.value = uploadedFileSize.value / totalFileSize.value
-  }
+  return new Promise(resolve => {
 
-  const f = await $fetch(`/api/${archive.uuid}/file/uploaded`, {
-      method: "POST",
-      body: {
-        name: file.name,
-        type: file.type 
+    const fileReader = new FileReader()
+    
+    let lastByte = Date.now()
+    let offset = 0
+    let i = 0
+    fileReader.onload = async (event) => {
+      const data = event.target.result
+      if (event.target.result.length > 0) {
+        await $fetch(`/api/${archive.uuid}/file/upload`, {
+          method: "POST",
+          body: {
+            name: file.name,
+            content: btoa(event.target.result)
+          }
+        })
+        
+        if(!(i % 5)) speed.value = data.length / ((Date.now() - lastByte) / 1000)
+        if(!(i % 5)) avgSpeed.value = uploadedFileSize.value / ((Date.now() - startedAt) / 1000)
+        lastByte = Date.now()
+        file.progress.value = Math.min((offset+chunkSize)/file.size,1)
+        uploadedFileSize.value += data.length
+        i++;
+        offset += chunkSize;
+        readNext();
+      } else {
+        // Done reading file
+        const f = await $fetch(`/api/${archive.uuid}/file/uploaded`, {
+            method: "POST",
+            body: {
+              name: file.name,
+              type: file.type 
+            }
+        })
+        resolve()
       }
+    };
+    
+    function readNext() {
+      let slice = file.slice(offset, offset + chunkSize);
+      fileReader.readAsBinaryString(slice);
+    }
+    
+    readNext();
+    
   })
-
 }
 
 </script>

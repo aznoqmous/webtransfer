@@ -4,8 +4,8 @@
         <figure  v-else>
             <img :src="file.path.replace('/public', '')" alt="">
         </figure>
-        <strong>{{ file.name }}</strong>
-        <small>{{ file.type }}</small>
+        <strong class="name">{{ file.name }}</strong>
+        <small class="type">{{ file.type }}</small>
         <small class="size">{{ Utils.humanFileSize(file.size) }}</small>
         <small class="extension">{{ file.name.split('.').at(-1) }}</small>
         <progress v-if="progress === 0 || progress < 1" max="100" :value="progress * 100">{{ progress * 100 }}%</progress>
