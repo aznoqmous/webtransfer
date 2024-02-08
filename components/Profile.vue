@@ -39,15 +39,8 @@
     </div>
 </template>
 <script setup>
-import Utils from "~/src/utils"
-
 const user = await useUser()
 const {me, logout} = await useAuth()
-const pictureUrl = ref(null)
-
-onMounted(()=>{
-    pictureUrl.value = Utils.getUserAvatarUrl(user.value)
-})
 
 if(!user.value){
     user.value = await me()
