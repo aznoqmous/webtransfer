@@ -40,4 +40,9 @@ export default class Utils {
     return icon
   }
 
+  static lerp(a, b, t){
+    t = Math.min(1, t)
+    return t * b + (1-t) * a 
+  }
+
 }

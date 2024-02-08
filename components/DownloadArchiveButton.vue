@@ -1,5 +1,5 @@
 <template>
-    <div class="button" @click="downloadArchive">
+    <div class="download-button button" @click="downloadArchive">
       <div class="column">
         <div class="row">
       <span class="material-symbols-outlined">
@@ -8,10 +8,7 @@
       <strong>Télécharger</strong>
 
       </div>
-      <small class="files-count">
-          {{ archive.filesCount > 1 ? archive.filesCount + " fichiers" : "1 fichier"}}
-          - {{ Utils.humanFileSize(archive.fileSize) }}
-      </small>
+      
       </div>
     </div>
 </template>

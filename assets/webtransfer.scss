@@ -173,6 +173,8 @@ progress {
     }
     &::-webkit-progress-value {
         background: var(--accent-color);
+        transition: 0.5s ease;
+        
     }
 
 }
@@ -296,7 +298,7 @@ progress {
                     position: relative;
                     transition: all 0.2s ease;
                     background: var(--color-bg-1);
-
+                    
                     &.loading {
                         opacity: 0.5;
                         background: var(--color-bg-0);
@@ -343,6 +345,23 @@ progress {
                         flex-shrink: 0;
                         @include text-overflow(1);
                     }
+
+                    &:hover {
+                        .delete {
+                            opacity: 1;
+                        }
+                    }
+                    .delete {
+                        position: absolute;
+                        top:  0.5rem;
+                        right: 0.5rem;
+                        color: var(--color-grey);
+                        opacity: 0;
+                        transition: all 0.2s ease;
+                        &:hover {
+                            color: var(--color-color);
+                        }
+                    }
                 }
             }
         }
@@ -355,6 +374,11 @@ progress {
     }
     .files-count {
         color: var(--color-grey);
+    }
+    .buttons {
+        gap: 0.5rem;
+        align-items: stretch;
+        margin-bottom: 0.5rem;
     }
 }
 .button {

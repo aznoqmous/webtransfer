@@ -16,8 +16,8 @@
           </small>
           
           <div class="files">
-              <div class="file" v-for="file in files">
-                  <FileItem :file="file" :progress="file.progress"/>
+              <div class="file" v-for="(file,i) in files">
+                  <FileItem :key="file.id||i" :file="file" :progress="file.progress" :archive="archive" @delete="removeFile"/>
               </div>
           </div>
         </div>
@@ -32,14 +32,15 @@
             {{ Utils.humanDuration((totalUploadFileSize-uploadedFileSize)/avgSpeed) }} restant
           </small>
         </div>
-        <div v-else-if="timeLeft" class="column">
-          <DownloadArchiveButton :archive="archive"/>
-          <small class="time-left">Expire dans {{ Utils.humanDuration(timeLeft) }}</small>
+        <div class="column">
+          <div class="row-center buttons">
+            <DownloadArchiveButton :archive="archive"/>
+            <ShareArchiveButton :archive="archive">Partager</ShareArchiveButton>
+          </div>
+          <small v-if="timeLeft" class="time-left">Expire dans {{ Utils.humanDuration(timeLeft) }}</small>
           <small class="download-count" v-if="timeLeft && user && user.id == archive.userId">Téléchargé {{ archive.downloadCount }} fois</small>
         </div>
-        <div v-else>
-          <ShareArchiveButton :archive="archive">Partager</ShareArchiveButton>
-        </div> 
+
       
       </div>
       <div v-else>
@@ -55,9 +56,9 @@ import Utils from '~/src/utils';
 const user = await useUser()
 const props = defineProps(["archive"])
 const archive = props.archive
-const createdDate = new Date(archive.startedAt)
-const ellapsedTime = Date.now() - createdDate.getTime()
-const timeLeft = config.archiveLifeTimeSeconds - ellapsedTime / 1000
+
+const timeLeft = ref(null)
+
 const titleInput = ref(null)
 const title = ref(archive.title)
 const chunkSize = 1024 * 1024
@@ -84,6 +85,7 @@ const titleChange = ()=>{
 
 const update = async(e)=>{
     title.value = titleInput.value ? titleInput.value.value : archive.uuid
+    totalFileSize.value = files.value.reduce((a,b)=> a + b.size, 0)
     await $fetch(`/api/${archive.uuid}/update`, {
         method: "POST",
         body: {
@@ -133,9 +135,14 @@ const upload = async (file) => {
   }
 
 
-  await uploadFile(file)
+  const dbFile = await uploadFile(file)
+  file.id = dbFile.id
+  files.value.splice(files.value.indexOf(file), 1, file)
   queue.splice(queue.indexOf(file), 1)
   totalFileSize.value += file.size
+  setTimeout(async()=>{ 
+    //files.value.push(file)
+  })
   await upload()
 }
 
@@ -182,7 +189,7 @@ const uploadFile = async (file)=>{
               type: file.type 
             }
         })
-        resolve()
+        resolve(f)
       }
     };
     
@@ -198,6 +205,24 @@ const uploadFile = async (file)=>{
     readNext();
     
   })
+}
+
+onMounted(()=>{
+    scheduleUpdateTimeLeft()
+})
+const updateTimeLeft = ()=>{
+    const createdDate = new Date(archive.createdAt)
+    const ellapsedTime = Date.now() - createdDate.getTime()
+    timeLeft.value = config.archiveLifeTimeSeconds - ellapsedTime / 1000
+} 
+updateTimeLeft()
+const scheduleUpdateTimeLeft = ()=>{
+    updateTimeLeft()
+    setTimeout(scheduleUpdateTimeLeft, 1000)
+}
+const removeFile = (file)=>{
+  files.value.splice(files.value.indexOf(file), 1)
+  update()
 }
 
 </script>

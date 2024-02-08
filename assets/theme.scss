@@ -94,6 +94,11 @@ form, .form-container {
     display: flex;
     justify-content: space-between;
 }
+.row-center {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
 .row-start {
     width: 100%;
     display: flex;

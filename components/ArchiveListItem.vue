@@ -28,9 +28,7 @@ const user = await useUser()
 const props = defineProps(["archive"])
 const emit = defineEmits(["delete"])
 const archive = props.archive
-const createdDate = new Date(archive.createdAt)
-const ellapsedTime = Date.now() - createdDate.getTime()
-const timeLeft = config.archiveLifeTimeSeconds - ellapsedTime / 1000
+const timeLeft = ref(null)
 
 const remove = async ()=>{
     emit("delete", archive)
@@ -39,5 +37,19 @@ const remove = async ()=>{
 
 if(timeLeft < 0) {
     remove()
+}
+
+onMounted(()=>{
+    scheduleUpdateTimeLeft()
+})
+const updateTimeLeft = ()=>{
+    const createdDate = new Date(archive.createdAt)
+    const ellapsedTime = Date.now() - createdDate.getTime()
+    timeLeft.value = config.archiveLifeTimeSeconds - ellapsedTime / 1000
+} 
+updateTimeLeft()
+const scheduleUpdateTimeLeft = ()=>{
+    updateTimeLeft()
+    setTimeout(scheduleUpdateTimeLeft, 1000)
 }
 </script>
