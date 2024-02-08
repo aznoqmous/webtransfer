@@ -12,7 +12,8 @@
                 <i class="material-symbols-outlined">
                 upload
                 </i>
-                <span>Drop files here</span>
+                <span>Déposez vos fichiers</span>
+                <small>Uploadez vos fichiers en les déposant dans cette fenêtre</small>
             </div>
         </div>
     </div>

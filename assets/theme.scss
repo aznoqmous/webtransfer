@@ -34,8 +34,6 @@
     --input-padding: var(--input-padding-h) var(--input-padding-v);
     --border-radius: 0.5rem;
     --accent-color: #33db96;
-    --color-blue: #218ddc; 
-    --color-green: #28a745;
 }
 
 ::selection {
@@ -86,7 +84,7 @@ label {
     color: var(--color-color-light);
 }
 
-form {
+form, .form-container {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -146,6 +144,10 @@ input, select, textarea {
         border: 2px solid var(--color-bg-0);
         padding: var(--input-padding);
         color: currentColor;
+    }
+    &[disabled]{
+        background: transparent;
+        border: 2px solid transparent;
     }
     &:focus {
         background: var(--color-bg-1);

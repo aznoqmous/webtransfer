@@ -4,7 +4,7 @@
         <div class="content">
           <div class="row header">
             <div class="title row">
-              <h3 v-if="user && user.id == archive.userId"><input ref="titleInput" class="archive-title form-transparent" placeholder="Sans titre" type="text" :value="archive.title" @focusout="update"></h3>
+              <h3 v-if="user && user.id == archive.userId"><input ref="titleInput" class="archive-title form-transparent" placeholder="Sans titre" type="text" :value="title" @input="titleChange" @focusout="update"></h3>
               <h3 v-else>{{ archive.title || "Sans titre" }}</h3>
               <FileInput v-if="user && user.id == archive.userId" @filesChange="filesChange"></FileInput>
             </div>
@@ -27,11 +27,10 @@
               <strong>{{ Math.floor(uploadedFileSize/totalUploadFileSize*100) }}%</strong>
               <small>{{ Utils.humanFileSize(speed) }}/s</small>
             </span>
-            
           </div>
-          <div class="time-left">
-            {{ Utils.humanDuration((totalUploadFileSize-uploadedFileSize)/avgSpeed) }}
-          </div>
+          <small class="time-left">
+            {{ Utils.humanDuration((totalUploadFileSize-uploadedFileSize)/avgSpeed) }} restant
+          </small>
         </div>
         <div v-else-if="timeLeft" class="column">
           <DownloadArchiveButton :archive="archive"/>
@@ -60,17 +59,15 @@ const createdDate = new Date(archive.startedAt)
 const ellapsedTime = Date.now() - createdDate.getTime()
 const timeLeft = config.archiveLifeTimeSeconds - ellapsedTime / 1000
 const titleInput = ref(null)
-
+const title = ref(archive.title)
 const chunkSize = 1024 * 1024
-const uploadedFiles = ref([])
 const files = ref(archive.files)
 const uploadedFileSize = ref(0)
 const totalUploadFileSize = ref(0)
 const totalFileSize = ref(archive.fileSize)
 const speed = ref(0)
 const avgSpeed = ref(0)
-
-import fs from "fs"
+const queue = []
 
 const remove = async (uuid)=>{
     user.value.archives = user.value.archives.filter(a => a.uuid !== uuid)
@@ -81,7 +78,12 @@ if(timeLeft < 0) {
     remove(archive.uuid)
 }
 
+const titleChange = ()=>{
+  title.value = titleInput.value.value
+}
+
 const update = async(e)=>{
+    title.value = titleInput.value ? titleInput.value.value : archive.uuid
     await $fetch(`/api/${archive.uuid}/update`, {
         method: "POST",
         body: {
@@ -95,35 +97,46 @@ const update = async(e)=>{
 
 const filesChange = (inputFiles, newFiles) => {
   upload(newFiles)
+  newFiles.map(file => addToQueue(file))
+  update()
+}
+
+const addToQueue = (file)=>{
+  // filter already existing files
+  if(files.value.some(f => f.name == file.name)) return;
+
+  // start upload
+  if(!queue.length){
+    window.history.pushState({}, "", "/"+archive.uuid)
+    startedAt = Date.now()
+    avgSpeed.value = 0
+    uploadedFileSize.value = 0
+    totalUploadFileSize.value = 0
+    upload(file)
+  }
+  queue.push(file)
+  file.progress = ref(0)
+  files.value.push(file)
+  totalUploadFileSize.value += file.size
+
 }
 
 let startedAt = 0
-const upload = async (newFiles) => {
-  startedAt = Date.now()
-  avgSpeed.value = 0
-  uploadedFileSize.value = 0
-  totalUploadFileSize.value = 0
+const upload = async (file) => {
+  
+  file = file || queue[0]
 
-  await update()
-
-  if(newFiles.length == files.length) {
-    uploadedFiles.value = []
-    uploadedFileSize.value = 0
+  if(file == null) {
+    // end of queue
+    await update()
+    return;
   }
 
-  for (let file of newFiles) {
-    file.progress = ref(0)
-    files.value.push(file)
-    uploadedFiles.value.push(file)
-    totalUploadFileSize.value += file.size
-  }
-  for (let file of newFiles) {
-    const f = await uploadFile(file)
-    uploadedFiles.value.splice(uploadedFiles.value.indexOf(file), 1)
-    totalFileSize.value += file.size
-  }
 
-  await update()
+  await uploadFile(file)
+  queue.splice(queue.indexOf(file), 1)
+  totalFileSize.value += file.size
+  await upload()
 }
 
 const uploadFile = async (file)=>{
@@ -136,7 +149,6 @@ const uploadFile = async (file)=>{
     })
 
   return new Promise(resolve => {
-
     const fileReader = new FileReader()
     
     let lastByte = Date.now()
@@ -176,7 +188,11 @@ const uploadFile = async (file)=>{
     
     function readNext() {
       let slice = file.slice(offset, offset + chunkSize);
-      fileReader.readAsBinaryString(slice);
+      try {
+        fileReader.readAsBinaryString(slice);
+      }catch(e){
+        
+      }
     }
     
     readNext();

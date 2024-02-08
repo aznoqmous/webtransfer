@@ -1,8 +1,11 @@
 <template>
-    <div class="archives-list">
+    <div v-if="archives.length" class="archives-list">
         <div v-for="archive in archives" class="archive">
             <ArchiveListItem :archive="archive" @delete="deleteArchive" :key="archive.uuid"/>
         </div>
+    </div>
+    <div v-else class="column">
+        Aucune archive
     </div>
 </template>
 <script setup>
