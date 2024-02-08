@@ -32,22 +32,25 @@
             {{ Utils.humanDuration((totalUploadFileSize-uploadedFileSize)/avgSpeed) }} restant
           </small>
         </div>
-        <div class="column">
+
+        <div class="column" v-if="!queue.length">
           <div class="row-center buttons">
             <DownloadArchiveButton :archive="archive"/>
             <ShareArchiveButton :archive="archive">Partager</ShareArchiveButton>
           </div>
           <small v-if="timeLeft" class="time-left">Expire dans {{ Utils.humanDuration(timeLeft) }}</small>
           <small class="download-count" v-if="timeLeft && user && user.id == archive.userId">Téléchargé {{ archive.downloadCount }} fois</small>
+          <div class="time-left-progress" :style="'--progress:' + timeLeftProgress"></div>
+          <div v-if="user && user.id == archive.userId" class="actions">
+                <span class="time material-symbols-outlined" @click="resetTime()" title="Réinitialiser le temps">history</span>
+                <span class="delete material-symbols-outlined" @click="removeButton()" title="Supprimer">delete</span>
+            </div>
         </div>
-
-      
       </div>
       <div v-else>
         <FileInput v-if="user && user.id == archive.userId" @filesChange="filesChange"></FileInput>
       </div>
     </div>
-    
 </template>
 <script setup>
 import config from "~/src/config.json"
@@ -69,14 +72,12 @@ const totalFileSize = ref(archive.fileSize)
 const speed = ref(0)
 const avgSpeed = ref(0)
 const queue = []
+const timeLeftProgress = ref(0)
 
 const remove = async (uuid)=>{
     user.value.archives = user.value.archives.filter(a => a.uuid !== uuid)
-    await $fetch(`/api/${uuid}/delete`, {method: "POST"})
-}
-
-if(timeLeft < 0) {
-    remove(archive.uuid)
+    await $fetch(`/api/${archive.uuid}/delete`, {method: "POST"})
+    window.location.reload()
 }
 
 const titleChange = ()=>{
@@ -86,7 +87,7 @@ const titleChange = ()=>{
 const update = async(e)=>{
     title.value = titleInput.value ? titleInput.value.value : archive.uuid
     totalFileSize.value = files.value.reduce((a,b)=> a + b.size, 0)
-    await $fetch(`/api/${archive.uuid}/update`, {
+    const a = await $fetch(`/api/${archive.uuid}/update`, {
         method: "POST",
         body: {
           title: titleInput.value ? titleInput.value.value : archive.uuid,
@@ -95,6 +96,8 @@ const update = async(e)=>{
           filesCount: files.value.length
         }
     })
+    archive.startedAt = a.startedAt
+    scheduleUpdateTimeLeft()
 }
 
 const filesChange = (inputFiles, newFiles) => {
@@ -209,20 +212,45 @@ const uploadFile = async (file)=>{
 
 onMounted(()=>{
     scheduleUpdateTimeLeft()
+    window.addEventListener('beforeunload', (e)=>{
+      if(queue.length && !confirm("Les fichiers en cours d'envoi seront supprimés !")) e.preventDefault()
+    })
 })
 const updateTimeLeft = ()=>{
-    const createdDate = new Date(archive.createdAt)
-    const ellapsedTime = Date.now() - createdDate.getTime()
+    const startedAt = new Date(archive.startedAt)
+    const ellapsedTime = Date.now() - startedAt.getTime()
     timeLeft.value = config.archiveLifeTimeSeconds - ellapsedTime / 1000
+    timeLeftProgress.value = (ellapsedTime / 1000) / config.archiveLifeTimeSeconds
 } 
 updateTimeLeft()
+let sheduledUpdateTimeLeft = null
 const scheduleUpdateTimeLeft = ()=>{
-    updateTimeLeft()
-    setTimeout(scheduleUpdateTimeLeft, 1000)
+  if(sheduledUpdateTimeLeft) clearTimeout(sheduledUpdateTimeLeft)
+  updateTimeLeft()
+  if(timeLeft.value < 0) {
+      remove()
+  }
+  else {
+    sheduledUpdateTimeLeft = setTimeout(scheduleUpdateTimeLeft, 1000)
+  }
 }
 const removeFile = (file)=>{
   files.value.splice(files.value.indexOf(file), 1)
   update()
 }
 
+
+const resetTime = async()=>{
+    const date =  new Date()
+    await $fetch(`/api/${archive.uuid}/update`, {
+        method: "POST", 
+        body: {
+        startedAt: new Date()
+    }})
+    archive.startedAt = date
+}
+const removeButton = ()=>{
+    if(!confirm("L'archive sera supprimée du serveur et ne sera plus accessible")) return;
+    remove()
+}
 </script>

@@ -1,6 +1,7 @@
 <template>
     <div :class="'file-item'
     + (progress === 0 || progress < 1 || deleted ? ' loading' : '')
+    + (progress > 0 && progress < 1 ? ' uploading' : '')
     " :title="file.name">
         <figure v-if="Utils.getFileIcon(file.type) != 'image' || !file.path || file.size > 1000000" class="material-symbols-outlined">{{ Utils.getFileIcon(file.type) }}</figure>
         <figure  v-else>

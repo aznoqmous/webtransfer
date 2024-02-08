@@ -1,6 +1,6 @@
 <template>
     <div class="profile" v-if="user">
-        <figure>
+        <figure class="username">
           {{ user.username }}
         </figure>
 

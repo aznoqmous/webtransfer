@@ -1,6 +1,6 @@
 <template>
   <div>
-    <a href="/"><h1><strong>web</strong><span>transfer</span></h1></a>
+
     <NuxtLayout>
       <div class="container">
         <NuxtPage/>
