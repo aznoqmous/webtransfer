@@ -75,11 +75,15 @@ const queue = []
 const timeLeftProgress = ref(0)
 
 const remove = async (uuid)=>{
-    user.value.archives = user.value.archives.filter(a => a.uuid !== uuid)
-    await $fetch(`/api/${archive.uuid}/delete`, {method: "POST"})
-    window.location.reload()
+  user.value.archives = user.value.archives.filter(a => a.uuid !== uuid)
+  await $fetch(`/api/${archive.uuid}/delete`, {method: "POST"})
+  window.location.reload()
 }
-
+const expire = async (uuid)=>{
+  user.value.archives = user.value.archives.filter(a => a.uuid !== uuid)
+  await $fetch(`/api/${archive.uuid}/expire`, {method: "POST"})
+  window.location.reload()
+}
 const titleChange = ()=>{
   title.value = titleInput.value.value
 }
@@ -228,7 +232,7 @@ const scheduleUpdateTimeLeft = ()=>{
   if(sheduledUpdateTimeLeft) clearTimeout(sheduledUpdateTimeLeft)
   updateTimeLeft()
   if(timeLeft.value < 0) {
-      remove()
+      expire()
   }
   else {
     sheduledUpdateTimeLeft = setTimeout(scheduleUpdateTimeLeft, 1000)

@@ -3,10 +3,13 @@
     + (progress === 0 || progress < 1 || deleted ? ' loading' : '')
     + (progress > 0 && progress < 1 ? ' uploading' : '')
     " :title="file.name">
-        <figure v-if="Utils.getFileIcon(file.type) != 'image' || !file.path || file.size > 1000000" class="material-symbols-outlined">{{ Utils.getFileIcon(file.type) }}</figure>
-        <figure  v-else>
+        <div v-if="Utils.getFileIcon(file.type) == 'image' && file.path && file.size < 1000000">
             <img :src="file.path.replace('/public', '')" alt="">
-        </figure>
+            <div class="background">
+                <img :src="file.path.replace('/public', '')" alt="">
+            </div>
+        </div>
+        <figure v-else class="material-symbols-outlined">{{ Utils.getFileIcon(file.type) }}</figure>
         <strong class="name">{{ file.name }}</strong>
         <small class="type">{{ file.type }}</small>
         <small class="size">{{ Utils.humanFileSize(file.size) }}</small>

@@ -41,6 +41,10 @@ const remove = async ()=>{
     emit("delete", archive)
     await $fetch(`/api/${archive.uuid}/delete`, {method: "POST"})
 }
+const expire = async ()=>{
+    const deleted = await $fetch(`/api/${archive.uuid}/expire`, {method: "POST"})
+    if(deleted) emit("delete", archive)
+}
 
 const resetTime = async()=>{
     const date =  new Date()
@@ -65,7 +69,7 @@ updateTimeLeft()
 const scheduleUpdateTimeLeft = ()=>{
     updateTimeLeft()
     if(timeLeft.value < 0) {
-        remove()
+        expire()
     }
     else {
         setTimeout(scheduleUpdateTimeLeft, 1000)
